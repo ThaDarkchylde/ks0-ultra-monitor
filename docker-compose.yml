@@ -1,0 +1,17 @@
+version: "3.7"
+
+services:
+
+  app_proxy:
+    environment:
+      APP_HOST: ks0-ultra-monitor_web_1
+      APP_PORT: 3000
+
+  web:
+    build:
+      context: ./app
+    restart: on-failure
+    stop_grace_period: 1m
+    environment:
+      KS_USER: ${KS_USER:-admin}
+      KS_PASSWORD: ${KS_PASSWORD:-}
