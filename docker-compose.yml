@@ -1,11 +1,21 @@
-version: "3.7"
-
 services:
 
   app_proxy:
+    image: getumbrel/app-proxy:1.7.0
+    restart: on-failure
     environment:
-      APP_HOST: ks0-ultra-monitor_web_1
+      APP_HOST: ks0-ultra-monitor-web-1
       APP_PORT: 3000
+      PROXY_AUTH_ADD: "false"
+      UMBREL_AUTH_SECRET: ${UMBREL_AUTH_SECRET}
+      MANAGER_IP: ${MANAGER_IP}
+    volumes:
+      - /home/umbrel/ks0-ultra-monitor:/data
+      - /home/umbrel/ks0-ultra-monitor/umbrel-app.yml:/extra/umbrel-app.yml:ro
+      - /home/umbrel/umbrel/tor/data:/var/lib/tor
+    networks:
+      - default
+      - umbrel_main_network
 
   web:
     build:
@@ -15,3 +25,8 @@ services:
     environment:
       KS_USER: ${KS_USER:-admin}
       KS_PASSWORD: ${KS_PASSWORD:-}
+
+networks:
+  umbrel_main_network:
+    external: true
+    name: umbrel_main_network
