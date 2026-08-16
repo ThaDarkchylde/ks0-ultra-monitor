@@ -1,0 +1,18 @@
+manifestVersion: 1
+id: ks0-ultra-monitor
+category: utilities
+name: KS0 Ultra Monitor
+version: "1.0.0"
+tagline: Matrix-style monitoring for IceRiver KS0 Ultra
+description: >-
+  Monitor IceRiver KS0 Ultra miners with realtime hashrate,
+  average hashrate, temperature, fan speed, clock, voltage,
+  pool status, rejects, firmware, uptime and estimated power usage.
+developer: ThaDarkchylde
+website: https://github.com/ThaDarkchylde/ks0-ultra-monitor
+dependencies: []
+repo: https://github.com/ThaDarkchylde/ks0-ultra-monitor
+support: https://github.com/ThaDarkchylde/ks0-ultra-monitor/issues
+port: 3000
+submitter: ThaDarkchylde
+submission: https://github.com/ThaDarkchylde/ks0-ultra-monitor
