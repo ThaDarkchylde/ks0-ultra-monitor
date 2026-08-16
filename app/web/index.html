@@ -1,0 +1,579 @@
+
+<!DOCTYPE html>
+
+<html lang="de">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KS0 ULTRA MONITOR</title>
+
+<style>
+
+* {
+
+    box-sizing: border-box;
+
+}
+
+body {
+
+    margin: 0;
+
+    background: #000;
+
+    color: #00ff66;
+
+    font-family: "Courier New", monospace;
+
+    min-height: 100vh;
+
+}
+
+body::before {
+
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+
+        repeating-linear-gradient(
+
+            0deg,
+
+            rgba(0,255,80,0.025) 0px,
+
+            rgba(0,255,80,0.025) 1px,
+
+            transparent 1px,
+
+            transparent 3px
+
+        );
+
+}
+
+.header {
+
+    text-align: center;
+
+    padding: 22px 10px;
+
+    border-bottom: 1px solid #00ff66;
+
+    text-shadow: 0 0 10px #00ff66;
+
+}
+
+.header h1 {
+
+    margin: 0;
+
+    font-size: 26px;
+
+    letter-spacing: 4px;
+
+}
+
+.header .status {
+
+    margin-top: 8px;
+
+    font-size: 13px;
+
+}
+
+.dashboard {
+
+    max-width: 1200px;
+
+    margin: auto;
+
+    padding: 20px;
+
+}
+
+.miners {
+
+    display: grid;
+
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+
+    gap: 20px;
+
+}
+
+.miner {
+
+    border: 1px solid #00ff66;
+
+    padding: 18px;
+
+    background: rgba(0,20,5,0.65);
+
+    box-shadow:
+
+        0 0 12px rgba(0,255,80,0.15),
+
+        inset 0 0 20px rgba(0,255,80,0.03);
+
+}
+
+.miner-title {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    border-bottom: 1px dashed #00ff66;
+
+    padding-bottom: 12px;
+
+    margin-bottom: 15px;
+
+}
+
+.name {
+
+    font-size: 21px;
+
+    font-weight: bold;
+
+    text-shadow: 0 0 8px #00ff66;
+
+}
+
+.online {
+
+    color: #00ff66;
+
+}
+
+.offline {
+
+    color: #ff3333;
+
+}
+
+.hashrate {
+
+    font-size: 34px;
+
+    text-align: center;
+
+    margin: 15px 0;
+
+    text-shadow: 0 0 15px #00ff66;
+
+}
+
+.hash-label {
+
+    font-size: 11px;
+
+    opacity: .7;
+
+    text-align: center;
+
+}
+
+.grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 9px;
+
+    margin-top: 15px;
+
+}
+
+.item {
+
+    border: 1px solid rgba(0,255,102,.35);
+
+    padding: 10px;
+
+}
+
+.label {
+
+    font-size: 10px;
+
+    opacity: .65;
+
+    margin-bottom: 5px;
+
+}
+
+.value {
+
+    font-size: 17px;
+
+}
+
+.power {
+
+    grid-column: span 2;
+
+    border: 1px solid #00ff66;
+
+    text-align: center;
+
+    padding: 14px;
+
+    margin-top: 4px;
+
+}
+
+.power .value {
+
+    font-size: 27px;
+
+    text-shadow: 0 0 10px #00ff66;
+
+}
+
+.estimate {
+
+    font-size: 10px;
+
+    opacity: .6;
+
+}
+
+.total {
+
+    margin-top: 25px;
+
+    border: 1px solid #00ff66;
+
+    padding: 18px;
+
+    text-align: center;
+
+}
+
+.total-title {
+
+    font-size: 12px;
+
+    opacity: .7;
+
+}
+
+.total-power {
+
+    font-size: 32px;
+
+    margin-top: 5px;
+
+    text-shadow: 0 0 12px #00ff66;
+
+}
+
+.footer {
+
+    text-align: center;
+
+    padding: 20px;
+
+    font-size: 10px;
+
+    opacity: .5;
+
+}
+
+.error {
+
+    color: #ff3333;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+    <h1>KS0 ULTRA // MATRIX MONITOR</h1>
+
+    <div class="status" id="systemStatus">INITIALIZING...</div>
+
+</div>
+
+<div class="dashboard">
+
+    <div class="miners" id="miners"></div>
+
+    <div class="total">
+
+        <div class="total-title">TOTAL POWER CONSUMPTION</div>
+
+        <div class="total-power" id="totalPower">-- W</div>
+
+    </div>
+
+</div>
+
+<div class="footer">
+
+    KS0 ULTRA MONITOR // LIVE DATA // REFRESH 5 SEC
+
+</div>
+
+<script>
+
+function value(v, suffix = "") {
+
+    if (v === null || v === undefined || v === "") {
+
+        return "--";
+
+    }
+
+    return v + suffix;
+
+}
+
+function renderMiner(miner) {
+
+    const online = miner.online === true;
+
+    const status = online
+
+        ? '<span class="online">● ONLINE</span>'
+
+        : '<span class="offline">● OFFLINE</span>';
+
+    const clock = miner.clock || {};
+
+    const voltage = miner.voltage || {};
+
+    const frequency =
+
+        clock.base !== undefined
+
+        ? (Number(clock.base) + Number(clock.offset || 0))
+
+        : null;
+
+    const voltageMv =
+
+        voltage.base !== undefined
+
+        ? (Number(voltage.base) + Number(voltage.offset || 0))
+
+        : null;
+
+    const voltageV =
+
+        voltageMv !== null
+
+        ? (voltageMv / 1000).toFixed(3)
+
+        : null;
+
+    const power =
+
+        miner.power !== null && miner.power !== undefined
+
+        ? Number(miner.power).toFixed(1)
+
+        : null;
+
+    return `
+
+        <div class="miner">
+
+            <div class="miner-title">
+
+                <div class="name">${miner.name}</div>
+
+                <div>${status}</div>
+
+            </div>
+
+            <div class="hashrate">
+
+                ${value(miner.hashrate)}
+
+            </div>
+
+            <div class="hash-label">
+
+                REALTIME HASHRATE
+
+            </div>
+
+            <div class="grid">
+
+                <div class="item">
+
+                    <div class="label">AVERAGE HASHRATE</div>
+
+                    <div class="value">
+
+                        ${value(miner.average_hashrate)}
+
+                    </div>
+
+                </div>
+
+                <div class="item">
+
+                    <div class="label">TEMPERATURE</div>
+
+                    <div class="value">
+
+                        ${value(miner.temperature, " °C")}
+
+                    </div>
+
+                </div>
+
+                <div class="item">
+
+                    <div class="label">CLOCK</div>
+
+                    <div class="value">
+
+                        ${value(frequency, " MHz")}
+
+                    </div>
+
+                </div>
+
+                <div class="item">
+
+                    <div class="label">VOLTAGE</div>
+
+                    <div class="value">
+
+                        ${voltageV !== null ? voltageV + " V" : "--"}
+
+                    </div>
+
+                </div>
+
+                <div class="item">
+
+                    <div class="label">FAN</div>
+
+                    <div class="value">
+
+                        ${value(miner.fan, " RPM")}
+
+                    </div>
+
+                </div>
+
+                <div class="item">
+
+                    <div class="label">MODEL</div>
+
+                    <div class="value">
+
+                        ${value(miner.model)}
+
+                    </div>
+
+                </div>
+
+                <div class="power">
+
+                    <div class="label">POWER CONSUMPTION</div>
+
+                    <div class="value">
+
+                        ${power !== null ? power + " W" : "--"}
+
+                    </div>
+
+                    <div class="estimate">
+
+                        ESTIMATED
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+async function update() {
+
+    try {
+
+        const response = await fetch("/api/miners?ts=" + Date.now());
+
+        if (!response.ok) {
+
+            throw new Error("API ERROR");
+
+        }
+
+        const miners = await response.json();
+
+        document.getElementById("miners").innerHTML =
+
+            miners.map(renderMiner).join("");
+
+        const onlineCount =
+
+            miners.filter(m => m.online).length;
+
+        const totalPower =
+
+            miners.reduce(
+
+                (sum, m) => sum + (Number(m.power) || 0),
+
+                0
+
+            );
+
+        document.getElementById("totalPower").textContent =
+
+            totalPower.toFixed(1) + " W";
+
+        document.getElementById("systemStatus").textContent =
+
+            `${onlineCount}/${miners.length} MINERS ONLINE // LIVE`;
+
+    } catch (error) {
+
+        document.getElementById("systemStatus").innerHTML =
+
+            '<span class="error">CONNECTION ERROR</span>';
+
+    }
+
+}
+
+update();
+
+setInterval(update, 5000);
+
+</script>
+
+</body>
+
+</html>
+

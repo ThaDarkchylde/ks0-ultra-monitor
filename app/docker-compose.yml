@@ -1,0 +1,9 @@
+services:
+  ks0-ultra-monitor:
+    build: .
+    container_name: ks0-ultra-monitor
+    restart: unless-stopped
+    ports:
+      - "3090:3000"
+    env_file:
+      - .env
