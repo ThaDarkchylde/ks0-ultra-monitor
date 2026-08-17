@@ -11,5 +11,5 @@ services:
     restart: on-failure
     stop_grace_period: 1m
     environment:
-      KS_USER: ${KS_USER:-admin}
-      KS_PASSWORD: ${KS_PASSWORD:-}
+      KS_USER: admin
+      KS_PASSWORD: "12345678"
