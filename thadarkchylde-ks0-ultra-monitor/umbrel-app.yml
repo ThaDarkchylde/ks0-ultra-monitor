@@ -2,7 +2,7 @@ manifestVersion: 1
 id: thadarkchylde-ks0-ultra-monitor
 category: utilities
 icon: https://raw.githubusercontent.com/ThaDarkchylde/ks0-ultra-monitor/main/icon.svg
-name: KS0 Ultra Monitor
+name: Mining Rig Center
 version: "1.0.0"
 tagline: Matrix-style monitoring for IceRiver KS0 Ultra
 description: >-
