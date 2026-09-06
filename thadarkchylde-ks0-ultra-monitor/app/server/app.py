@@ -57,7 +57,10 @@ def miners():
             "power_source": "estimated",
 
             "firmware": overview_data.get("softver1"),
-            "model": overview_data.get("model")
+            "model": overview_data.get("model"),
+
+            "pool": data.get("pool", {}),
+            "shares": data.get("bridge", {})
         })
 
     return jsonify(result)
