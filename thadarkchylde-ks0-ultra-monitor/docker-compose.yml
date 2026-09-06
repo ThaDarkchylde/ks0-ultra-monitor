@@ -13,3 +13,5 @@ services:
     environment:
       KS_USER: admin
       KS_PASSWORD: "12345678"
+    volumes:
+      - ${APP_DATA_DIR}/data:/app/data
