@@ -9,308 +9,565 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mining Rig Center</title>
+<title>KS0 ULTRA MONITOR</title>
 
 <style>
 
+:root {
+    --bg: #06090d;
+    --panel: #0c1219;
+    --panel2: #101923;
+    --border: rgba(255,255,255,.09);
+    --text: #f4f7f8;
+    --muted: #81909d;
+    --green: #35ff9a;
+    --red: #ff5577;
+    --orange: #ffb347;
+    --cyan: #45d9ff;
+    --shadow: 0 18px 50px rgba(0,0,0,.38);
+}
+
 * {
-
     box-sizing: border-box;
+}
 
+html, body {
+    margin: 0;
+    min-height: 100%;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(53,255,154,.07), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(69,217,255,.05), transparent 35%),
+        var(--bg);
+    color: var(--text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body {
-
-    margin: 0;
-
-    background: #000;
-
-    color: #00ff66;
-
-    font-family: "Courier New", monospace;
-
-    min-height: 100vh;
-
-}
-
-body::before {
-
-    content: "";
-
-    position: fixed;
-
-    inset: 0;
-
-    pointer-events: none;
-
-    background:
-
-        repeating-linear-gradient(
-
-            0deg,
-
-            rgba(0,255,80,0.025) 0px,
-
-            rgba(0,255,80,0.025) 1px,
-
-            transparent 1px,
-
-            transparent 3px
-
-        );
-
+    padding: 28px;
 }
 
 .header {
-
+    max-width: 1500px;
+    margin: 0 auto 24px;
     text-align: center;
-
-    padding: 22px 10px;
-
-    border-bottom: 1px solid #00ff66;
-
-    text-shadow: 0 0 10px #00ff66;
-
 }
 
 .header h1 {
-
     margin: 0;
-
-    font-size: 26px;
-
-    letter-spacing: 4px;
-
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 850;
+    letter-spacing: .08em;
+    color: var(--green);
+    text-shadow: 0 0 24px rgba(53,255,154,.2);
 }
 
 .header .status {
-
     margin-top: 8px;
-
-    font-size: 13px;
-
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .14em;
 }
 
 .dashboard {
-
-    max-width: 1200px;
-
+    max-width: 1500px;
     margin: auto;
-
-    padding: 20px;
-
 }
 
 .miners {
-
     display: grid;
-
-    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-
-    gap: 20px;
-
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
 }
 
-.miner {
-
-    border: 1px solid #00ff66;
-
-    padding: 18px;
-
-    background: rgba(0,20,5,0.65);
-
-    box-shadow:
-
-        0 0 12px rgba(0,255,80,0.15),
-
-        inset 0 0 20px rgba(0,255,80,0.03);
-
+.miner-card {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.035), transparent 35%),
+        linear-gradient(145deg, var(--panel2), var(--panel));
+    box-shadow: var(--shadow);
+    transition: .2s ease;
 }
 
-.miner-title {
+.miner-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(53,255,154,.3);
+}
 
+.miner-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: .9;
+}
+
+.miner-card.offline-card::before {
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+}
+
+.miner-header {
     display: flex;
-
     justify-content: space-between;
-
-    border-bottom: 1px dashed #00ff66;
-
-    padding-bottom: 12px;
-
-    margin-bottom: 15px;
-
+    align-items: flex-start;
+    gap: 12px;
+    padding: 22px 22px 16px;
 }
 
-.name {
-
+.miner-name {
     font-size: 21px;
-
-    font-weight: bold;
-
-    text-shadow: 0 0 8px #00ff66;
-
+    font-weight: 850;
+    letter-spacing: .02em;
 }
 
-.online {
-
-    color: #00ff66;
-
-}
-
-.offline {
-
-    color: #ff3333;
-
-}
-
-.hashrate {
-
-    font-size: 34px;
-
-    text-align: center;
-
-    margin: 15px 0;
-
-    text-shadow: 0 0 15px #00ff66;
-
-}
-
-.hash-label {
-
-    font-size: 11px;
-
-    opacity: .7;
-
-    text-align: center;
-
-}
-
-.grid {
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 9px;
-
-    margin-top: 15px;
-
-}
-
-.item {
-
-    border: 1px solid rgba(0,255,102,.35);
-
-    padding: 10px;
-
-}
-
-.label {
-
-    font-size: 10px;
-
-    opacity: .65;
-
-    margin-bottom: 5px;
-
-}
-
-.value {
-
-    font-size: 17px;
-
-}
-
-.power {
-
-    grid-column: span 2;
-
-    border: 1px solid #00ff66;
-
-    text-align: center;
-
-    padding: 14px;
-
+.miner-model {
     margin-top: 4px;
-
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
 }
 
-.power .value {
-
-    font-size: 27px;
-
-    text-shadow: 0 0 10px #00ff66;
-
-}
-
-.estimate {
-
+.miner-status {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border-radius: 999px;
     font-size: 10px;
+    font-weight: 850;
+    letter-spacing: .05em;
+}
 
-    opacity: .6;
+.miner-status.online {
+    color: var(--green);
+    background: rgba(53,255,154,.09);
+    border: 1px solid rgba(53,255,154,.25);
+}
 
+.miner-status.offline {
+    color: var(--red);
+    background: rgba(255,85,119,.09);
+    border: 1px solid rgba(255,85,119,.25);
+}
+
+.hero {
+    padding: 4px 22px 18px;
+}
+
+.hero-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+.hero-value {
+    margin-top: 5px;
+    color: var(--green);
+    font-size: 36px;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: -.03em;
+    text-shadow: 0 0 22px rgba(53,255,154,.16);
+}
+
+.offline-card .hero-value {
+    color: #8d9aa4;
+    text-shadow: none;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 8px;
+    padding: 0 22px 18px;
+}
+
+.stat {
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid rgba(255,255,255,.055);
+    border-radius: 13px;
+    background: rgba(255,255,255,.025);
+}
+
+.stat-label {
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    margin-top: 5px;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 800;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.stats .important .stat-value {
+    color: var(--green);
+}
+
+.share-section {
+    margin: 0 22px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+}
+
+.section-title {
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+.share-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 8px;
+}
+
+.share {
+    min-width: 0;
+    padding: 9px 8px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.025);
+}
+
+.share-label {
+    color: var(--muted);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.share-value {
+    margin-top: 4px;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.share.effort .share-value {
+    color: var(--orange);
+}
+
+.share.blocks .share-value {
+    color: var(--green);
+}
+
+.footer-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 8px;
+    padding: 0 22px 22px;
+}
+
+.info {
+    min-width: 0;
+    color: var(--muted);
+    font-size: 9px;
+    line-height: 1.45;
+}
+
+.info span {
+    display: block;
+    margin-bottom: 2px;
+    color: #64727e;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.info strong {
+    color: var(--text);
+    font-size: 10px;
+    font-weight: 750;
 }
 
 .total {
-
-    margin-top: 25px;
-
-    border: 1px solid #00ff66;
-
-    padding: 18px;
-
+    max-width: 1500px;
+    margin: 22px auto 0;
+    padding: 20px 24px;
     text-align: center;
-
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: linear-gradient(145deg, var(--panel2), var(--panel));
+    box-shadow: var(--shadow);
 }
 
 .total-title {
-
-    font-size: 12px;
-
-    opacity: .7;
-
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .14em;
 }
 
 .total-power {
-
-    font-size: 32px;
-
     margin-top: 5px;
-
-    text-shadow: 0 0 12px #00ff66;
-
+    color: var(--green);
+    font-size: 28px;
+    font-weight: 900;
 }
 
 .footer {
-
+    max-width: 1500px;
+    margin: 18px auto 0;
     text-align: center;
-
-    padding: 20px;
-
-    font-size: 10px;
-
-    opacity: .5;
-
+    color: #4f5c66;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .12em;
 }
 
 .error {
+    color: var(--red);
+}
 
-    color: #ff3333;
+@media (max-width: 1050px) {
+    .miners {
+        grid-template-columns: 1fr 1fr;
+    }
+}
 
+@media (max-width: 700px) {
+    body {
+        padding: 12px;
+    }
+
+    .miners {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-value {
+        font-size: 32px;
+    }
 }
 
 </style>
 
+
+<style id="modern-miner-ui">
+:root{
+  --bg:#070b10;
+  --panel:rgba(15,22,30,.88);
+  --panel2:rgba(20,29,39,.92);
+  --border:rgba(255,255,255,.09);
+  --text:#e8edf2;
+  --muted:#8794a3;
+  --green:#35ff9a;
+  --cyan:#35d9ff;
+  --orange:#ffb84d;
+  --red:#ff5577;
+  --shadow:0 18px 45px rgba(0,0,0,.38);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0!important;
+  background:
+    radial-gradient(circle at 15% 0%,rgba(53,217,255,.08),transparent 32%),
+    radial-gradient(circle at 85% 0%,rgba(53,255,154,.07),transparent 30%),
+    linear-gradient(180deg,#080c12 0%,#05080c 100%)!important;
+  color:var(--text)!important;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  letter-spacing:.01em;
+}
+
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:linear-gradient(to bottom,black,transparent 80%);
+}
+
+h1,h2,h3{
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+}
+
+#app,.container,.dashboard{
+  max-width:1500px!important;
+  margin:auto!important;
+}
+
+.miner-grid{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr))!important;
+  gap:20px!important;
+  padding:20px!important;
+}
+
+.miner-card,
+.card{
+  position:relative;
+  background:linear-gradient(145deg,var(--panel2),var(--panel))!important;
+  border:1px solid var(--border)!important;
+  border-radius:20px!important;
+  box-shadow:var(--shadow)!important;
+  overflow:hidden;
+  backdrop-filter:blur(16px);
+}
+
+.miner-card:before,
+.card:before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);
+  opacity:.8;
+}
+
+.miner-card:hover{
+  transform:translateY(-2px);
+  transition:.2s ease;
+  border-color:rgba(53,255,154,.28)!important;
+}
+
+.miner-header{
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:center!important;
+  padding:20px 20px 12px!important;
+}
+
+.miner-name{
+  font-size:20px!important;
+  font-weight:750!important;
+  letter-spacing:.03em!important;
+}
+
+.miner-model{
+  color:var(--muted)!important;
+  font-size:12px!important;
+  margin-top:3px;
+}
+
+.status-online,
+.online{
+  color:var(--green)!important;
+  background:rgba(53,255,154,.09)!important;
+  border:1px solid rgba(53,255,154,.22)!important;
+  border-radius:999px!important;
+  padding:5px 10px!important;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+
+.status-offline,
+.offline{
+  color:var(--red)!important;
+  background:rgba(255,85,119,.09)!important;
+  border:1px solid rgba(255,85,119,.22)!important;
+  border-radius:999px!important;
+  padding:5px 10px!important;
+}
+
+.hashrate{
+  font-size:34px!important;
+  font-weight:800!important;
+  color:var(--green)!important;
+  line-height:1.05!important;
+  text-shadow:0 0 18px rgba(53,255,154,.18);
+}
+
+.hashrate-label{
+  color:var(--muted)!important;
+  font-size:11px!important;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+
+.metric-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,1fr)!important;
+  gap:9px!important;
+  padding:12px 20px 20px!important;
+}
+
+.metric{
+  background:rgba(255,255,255,.035)!important;
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:12px!important;
+  padding:11px!important;
+}
+
+.metric-label{
+  color:var(--muted)!important;
+  font-size:10px!important;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.metric-value{
+  margin-top:4px!important;
+  font-size:16px!important;
+  font-weight:700!important;
+  color:var(--text)!important;
+}
+
+.effort{
+  color:var(--orange)!important;
+  font-weight:800!important;
+}
+
+.section-title{
+  color:var(--muted)!important;
+  font-size:11px!important;
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  padding:18px 20px 5px;
+}
+
+header{
+  background:rgba(5,8,12,.82)!important;
+  border-bottom:1px solid var(--border)!important;
+  backdrop-filter:blur(18px);
+}
+
+@media(max-width:700px){
+  .miner-grid{
+    grid-template-columns:1fr!important;
+    padding:10px!important;
+  }
+
+  .hashrate{
+    font-size:29px!important;
+  }
+}
+</style>
 </head>
 
 <body>
 
 <div class="header">
-
     <h1>MINING RIG CENTER</h1>
-
     <div class="status" id="systemStatus">INITIALIZING...</div>
-
 </div>
 
 <div class="dashboard">
@@ -318,262 +575,420 @@ body::before {
     <div class="miners" id="miners"></div>
 
     <div class="total">
-
         <div class="total-title">TOTAL POWER CONSUMPTION</div>
-
         <div class="total-power" id="totalPower">-- W</div>
-
     </div>
 
 </div>
 
 <div class="footer">
-
     KS0 ULTRA MONITOR // LIVE DATA // REFRESH 5 SEC
-
 </div>
 
 <script>
 
-function value(v, suffix = "") {
+const lastKnownMiners = {};
 
-    if (v === null || v === undefined || v === "") {
-
-        return "--";
-
-    }
-
-    return v + suffix;
-
+function text(v, fallback = "--") {
+    return v === null || v === undefined || v === ""
+        ? fallback
+        : v;
 }
 
-function renderMiner(miner) {
+function number(v, decimals = 0) {
+    return v !== null && v !== undefined && !isNaN(Number(v))
+        ? Number(v).toFixed(decimals)
+        : "--";
+}
 
-    const online = miner.online === true;
+function formatDiff(v) {
+    if (v === null || v === undefined || isNaN(Number(v)))
+        return "--";
 
-    const status = online
+    return Number(v).toLocaleString("de-DE");
+}
 
-        ? '<span class="online">● ONLINE</span>'
+function formatTemp(v) {
+    return v !== null && v !== undefined
+        ? number(v, 1) + " °C"
+        : "--";
+}
 
-        : '<span class="offline">● OFFLINE</span>';
+function formatNerdHash(v) {
+    if (v === null || v === undefined || isNaN(Number(v)))
+        return "--";
 
-    const clock = miner.clock || {};
+    return (Number(v) / 1000).toFixed(2) + " TH/s";
+}
 
-    const voltage = miner.voltage || {};
+function formatKsHash(v) {
+    return text(v);
+}
 
-    const frequency =
+function renderNerdQaxe(n) {
 
-        clock.base !== undefined
-
-        ? (Number(clock.base) + Number(clock.offset || 0))
-
-        : null;
-
-    const voltageMv =
-
-        voltage.base !== undefined
-
-        ? (Number(voltage.base) + Number(voltage.offset || 0))
-
-        : null;
-
-    const voltageV =
-
-        voltageMv !== null
-
-        ? (voltageMv / 1000).toFixed(3)
-
-        : null;
-
-    const power =
-
-        miner.power !== null && miner.power !== undefined
-
-        ? Number(miner.power).toFixed(1)
-
-        : null;
+    const online = !!n.online;
 
     return `
+    <div class="miner-card ${online ? "" : "offline-card"}">
 
-        <div class="miner">
-
-            <div class="miner-title">
-
-                <div class="name">${miner.name}</div>
-
-                <div>${status}</div>
-
+        <div class="miner-header">
+            <div>
+                <div class="miner-name">${text(n.name)}</div>
+                <div class="miner-model">
+                    NERDQAXE++ // ${text(n.asic, "BM1370")}
+                </div>
             </div>
 
-            <div class="hashrate">
+            <div class="miner-status ${online ? "online" : "offline"}">
+                ${online ? "● ONLINE" : "● OFFLINE"}
+            </div>
+        </div>
 
-                ${value(miner.hashrate)}
+        <div class="hero">
+            <div class="hero-label">HASHRATE</div>
+            <div class="hero-value">${formatNerdHash(n.hashrate)}</div>
+        </div>
 
+        <div class="stats">
+
+            <div class="stat important">
+                <div class="stat-label">1 MIN</div>
+                <div class="stat-value">${formatNerdHash(n.hashrate_1m)}</div>
             </div>
 
-            <div class="hash-label">
-
-                REALTIME HASHRATE
-
+            <div class="stat important">
+                <div class="stat-label">10 MIN</div>
+                <div class="stat-value">${formatNerdHash(n.hashrate_10m)}</div>
             </div>
 
-            <div class="grid">
+            <div class="stat">
+                <div class="stat-label">1 HOUR</div>
+                <div class="stat-value">${formatNerdHash(n.hashrate_1h)}</div>
+            </div>
 
-                <div class="item">
+            <div class="stat">
+                <div class="stat-label">24 HOURS</div>
+                <div class="stat-value">${formatNerdHash(n.hashrate_1d)}</div>
+            </div>
 
-                    <div class="label">AVERAGE HASHRATE</div>
+            <div class="stat">
+                <div class="stat-label">POWER</div>
+                <div class="stat-value">${number(n.power,1)} W</div>
+            </div>
 
-                    <div class="value">
+            <div class="stat">
+                <div class="stat-label">ASIC TEMP</div>
+                <div class="stat-value">${formatTemp(n.temperature)}</div>
+            </div>
 
-                        ${value(miner.average_hashrate)}
+            <div class="stat">
+                <div class="stat-label">VR TEMP</div>
+                <div class="stat-value">${formatTemp(n.vr_temperature)}</div>
+            </div>
 
-                    </div>
+            <div class="stat">
+                <div class="stat-label">FAN</div>
+                <div class="stat-value">${number(n.fan)} %</div>
+            </div>
 
+            <div class="stat">
+                <div class="stat-label">FAN RPM</div>
+                <div class="stat-value">${number(n.fan_rpm)} RPM</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">FREQUENCY</div>
+                <div class="stat-value">${number(n.frequency)} MHz</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">CORE VOLTAGE</div>
+                <div class="stat-value">${number(n.core_voltage)} mV</div>
+            </div>
+
+        </div>
+
+        <div class="share-section">
+
+            <div class="section-title">SHARES / SOLO PERFORMANCE</div>
+
+            <div class="share-grid">
+
+                <div class="share">
+                    <div class="share-label">ACCEPTED</div>
+                    <div class="share-value">${formatDiff(n.accepted)}</div>
                 </div>
 
-                <div class="item">
-
-                    <div class="label">TEMPERATURE</div>
-
-                    <div class="value">
-
-                        ${value(miner.temperature, " °C")}
-
-                    </div>
-
+                <div class="share">
+                    <div class="share-label">REJECTED</div>
+                    <div class="share-value">${formatDiff(n.rejected)}</div>
                 </div>
 
-                <div class="item">
-
-                    <div class="label">CLOCK</div>
-
-                    <div class="value">
-
-                        ${value(frequency, " MHz")}
-
-                    </div>
-
+                <div class="share">
+                    <div class="share-label">POOL DIFF</div>
+                    <div class="share-value">${formatDiff(n.pool_difficulty)}</div>
                 </div>
 
-                <div class="item">
-
-                    <div class="label">VOLTAGE</div>
-
-                    <div class="value">
-
-                        ${voltageV !== null ? voltageV + " V" : "--"}
-
-                    </div>
-
+                <div class="share">
+                    <div class="share-label">BEST DIFFICULTY</div>
+                    <div class="share-value">${formatDiff(n.best_diff)}</div>
                 </div>
 
-                <div class="item">
-
-                    <div class="label">FAN</div>
-
-                    <div class="value">
-
-                        ${value(miner.fan, " RPM")}
-
-                    </div>
-
+                <div class="share">
+                    <div class="share-label">SESSION BEST</div>
+                    <div class="share-value">${formatDiff(n.best_session_diff)}</div>
                 </div>
 
-                <div class="item">
-
-                    <div class="label">MODEL</div>
-
-                    <div class="value">
-
-                        ${value(miner.model)}
-
-                    </div>
-
-                </div>
-
-                <div class="power">
-
-                    <div class="label">POWER CONSUMPTION</div>
-
-                    <div class="value">
-
-                        ${power !== null ? power + " W" : "--"}
-
-                    </div>
-
-                    <div class="estimate">
-
-                        ESTIMATED
-
-                    </div>
-
+                <div class="share blocks">
+                    <div class="share-label">FOUND BLOCKS</div>
+                    <div class="share-value">${formatDiff(n.total_found_blocks)}</div>
                 </div>
 
             </div>
 
         </div>
 
-    `;
+        <div class="footer-info">
 
+            <div class="info">
+                <span>POOL</span>
+                <strong>${text(n.pool)}:${text(n.pool_port)}</strong>
+            </div>
+
+            <div class="info">
+                <span>WIFI</span>
+                <strong>${number(n.wifi_rssi)} dBm</strong>
+            </div>
+
+            <div class="info">
+                <span>PING</span>
+                <strong>${number(n.ping)} ms</strong>
+            </div>
+
+            <div class="info">
+                <span>FIRMWARE</span>
+                <strong>${text(n.firmware)}</strong>
+            </div>
+
+        </div>
+
+    </div>`;
+}
+
+function renderKs0(miner) {
+
+    const shares = miner.shares || {};
+    const online = !!miner.online;
+
+    return `
+    <div class="miner-card ${online ? "" : "offline-card"}">
+
+        <div class="miner-header">
+            <div>
+                <div class="miner-name">${text(miner.name)}</div>
+                <div class="miner-model">${text(miner.model, "KS0 ULTRA")}</div>
+            </div>
+
+            <div class="miner-status ${online ? "online" : "offline"}">
+                ${online ? "● ONLINE" : "● OFFLINE"}
+            </div>
+        </div>
+
+        <div class="hero">
+            <div class="hero-label">HASHRATE</div>
+            <div class="hero-value">${text(miner.hashrate)}</div>
+        </div>
+
+        <div class="stats">
+
+            <div class="stat important">
+                <div class="stat-label">AVERAGE</div>
+                <div class="stat-value">${text(miner.average_hashrate)}</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">TEMPERATURE</div>
+                <div class="stat-value">${miner.temperature !== null && miner.temperature !== undefined ? miner.temperature + " °C" : "--"}</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">FAN</div>
+                <div class="stat-value">${text(miner.fan)}</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">POWER</div>
+                <div class="stat-value">${miner.power !== null && miner.power !== undefined ? miner.power + " W" : "--"}</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">CLOCK</div>
+                <div class="stat-value">${miner.clock ? text(miner.clock.base) + " + " + text(miner.clock.offset) + " MHz" : "--"}</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">VOLTAGE</div>
+                <div class="stat-value">${miner.voltage ? text(miner.voltage.base) + " + " + text(miner.voltage.offset) : "--"}</div>
+            </div>
+
+        </div>
+
+        <div class="share-section">
+
+            <div class="section-title">SHARES / SOLO PERFORMANCE</div>
+
+            <div class="share-grid">
+
+                <div class="share">
+                    <div class="share-label">ACCEPTED</div>
+                    <div class="share-value">${formatDiff(shares.accepted)}</div>
+                </div>
+
+                <div class="share">
+                    <div class="share-label">REJECTED</div>
+                    <div class="share-value">${formatDiff(shares.rejected)}</div>
+                </div>
+
+                <div class="share">
+                    <div class="share-label">TOTAL SHARES</div>
+                    <div class="share-value">${formatDiff(shares.shares)}</div>
+                </div>
+
+                <div class="share blocks">
+                    <div class="share-label">BLOCKS FOUND</div>
+                    <div class="share-value">${formatDiff(shares.blocks)}</div>
+                </div>
+
+                <div class="share effort">
+                    <div class="share-label">CURRENT EFFORT</div>
+                    <div class="share-value">
+                        ${shares.effort !== null && shares.effort !== undefined
+                            ? Number(shares.effort).toFixed(3) + " %"
+                            : "--"}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="footer-info">
+
+            <div class="info">
+                <span>POOL</span>
+                <strong>${text(miner.pool?.address || miner.pool)}</strong>
+            </div>
+
+            <div class="info">
+                <span>POOL DIFF</span>
+                <strong>${text(shares.difficulty || miner.pool?.difficulty)}</strong>
+            </div>
+
+            <div class="info">
+                <span>FIRMWARE</span>
+                <strong>${text(miner.firmware)}</strong>
+            </div>
+
+            <div class="info">
+                <span>IP</span>
+                <strong>${text(miner.ip)}</strong>
+            </div>
+
+        </div>
+
+    </div>`;
+}
+
+function renderMiner(miner) {
+
+    if (miner.type === "nerdqaxe") {
+        return renderNerdQaxe(miner);
+    }
+
+    return renderKs0(miner);
 }
 
 async function update() {
 
     try {
 
-        const response = await fetch("/api/miners?ts=" + Date.now());
+        const response = await fetch(
+            "/api/miners?ts=" + Date.now(),
+            { cache: "no-store" }
+        );
 
         if (!response.ok) {
-
             throw new Error("API ERROR");
-
         }
 
-        const miners = await response.json();
+        let miners = await response.json();
+
+        miners = miners.map(miner => {
+
+            if (miner.type === "nerdqaxe") {
+
+                const key = miner.ip || miner.name;
+
+                if (miner.online) {
+
+                    lastKnownMiners[key] = {
+                        ...miner,
+                        online: true
+                    };
+
+                    return miner;
+
+                }
+
+                if (lastKnownMiners[key]) {
+
+                    return {
+                        ...lastKnownMiners[key],
+                        ...miner,
+                        online: false
+                    };
+                }
+            }
+
+            return miner;
+        });
 
         document.getElementById("miners").innerHTML =
-
             miners.map(renderMiner).join("");
 
         const onlineCount =
-
             miners.filter(m => m.online).length;
 
         const totalPower =
-
             miners.reduce(
-
                 (sum, m) => sum + (Number(m.power) || 0),
-
                 0
-
             );
 
         document.getElementById("totalPower").textContent =
-
             totalPower.toFixed(1) + " W";
 
         document.getElementById("systemStatus").textContent =
-
             `${onlineCount}/${miners.length} MINERS ONLINE // LIVE`;
 
     } catch (error) {
 
         document.getElementById("systemStatus").innerHTML =
-
             '<span class="error">CONNECTION ERROR</span>';
-
     }
-
 }
 
 update();
-
 setInterval(update, 5000);
+
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        update();
+    }
+});
 
 </script>
 
 </body>
-
 </html>
-
