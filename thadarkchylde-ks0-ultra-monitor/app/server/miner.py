@@ -838,8 +838,9 @@ def get_miner_data(ip):
         "host"
     )
 
-    kryptex = get_kryptex_data(
-        worker
+    bridge_data = get_bridge_data(
+        worker,
+        ip
     )
 
     return {
@@ -875,7 +876,7 @@ def get_miner_data(ip):
             )
         },
 
-        "kryptex": kryptex
+        "bridge": bridge_data
     }
 
 
@@ -951,4 +952,234 @@ def get_bitmain_data(ip):
         "power": None,
         "power_source": "n/a",
         "error": None
+    }
+
+
+# ============================================================
+# KASPA SOLO BRIDGE (lokale Prometheus-Metrics)
+# ============================================================
+
+BRIDGE_METRICS_URL = os.getenv(
+    "BRIDGE_METRICS_URL",
+    "http://kaspa_bridge_1:2114/metrics"
+)
+
+BRIDGE_STATE_FILE = Path(
+    os.getenv(
+        "KS_BRIDGE_STATE",
+        "/app/data/bridge_state.json"
+    )
+)
+
+
+def load_bridge_state():
+    try:
+        if BRIDGE_STATE_FILE.exists():
+            with open(BRIDGE_STATE_FILE, "r", encoding="utf-8") as f:
+                state = json.load(f)
+            if isinstance(state, dict):
+                state.setdefault("workers", {})
+                return state
+    except Exception:
+        pass
+    return {"workers": {}}
+
+
+def save_bridge_state(state):
+    try:
+        BRIDGE_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        tmp = BRIDGE_STATE_FILE.with_suffix(".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(state, f, indent=2, ensure_ascii=False)
+        tmp.replace(BRIDGE_STATE_FILE)
+    except Exception:
+        pass
+
+
+BRIDGE_STATE = load_bridge_state()
+
+
+def _parse_prometheus(text):
+    results = []
+    for line in text.splitlines():
+        if not line or line.startswith("#"):
+            continue
+        if "{" in line:
+            name, rest = line.split("{", 1)
+            try:
+                label_str, value_str = rest.rsplit("}", 1)
+            except ValueError:
+                continue
+            labels = {}
+            for part in label_str.split(","):
+                if "=" not in part:
+                    continue
+                k, v = part.split("=", 1)
+                labels[k.strip()] = v.strip().strip('"')
+            try:
+                value = float(value_str.strip())
+            except ValueError:
+                continue
+            results.append((name.strip(), labels, value))
+        else:
+            parts = line.rsplit(" ", 1)
+            if len(parts) != 2:
+                continue
+            name, value_str = parts
+            try:
+                value = float(value_str.strip())
+            except ValueError:
+                continue
+            results.append((name.strip(), {}, value))
+    return results
+
+
+def get_bridge_metrics():
+    try:
+        response = requests.get(BRIDGE_METRICS_URL, timeout=5)
+        response.raise_for_status()
+        return _parse_prometheus(response.text)
+    except Exception:
+        return []
+
+
+def get_bridge_data(worker_name, ip=None):
+    metrics = get_bridge_metrics()
+
+    if not metrics:
+        return {
+            "pool": "Kaspa Solo Bridge",
+            "coin": "KAS",
+            "status": "offline",
+            "error": "Bridge-Metrics nicht erreichbar"
+        }
+
+    process_start_time = None
+    network_difficulty = None
+    network_hashrate = None
+
+    raw_diffsum = 0.0
+    raw_valid = 0
+    raw_blocks = 0
+    raw_rejected = {"duplicate": 0, "invalid": 0, "stale": 0, "weak": 0}
+    worker_found = False
+
+    for name, labels, value in metrics:
+
+        if name == "process_start_time_seconds":
+            process_start_time = value
+
+        elif name == "ks_network_difficulty_gauge":
+            network_difficulty = value
+
+        elif name == "ks_estimated_network_hashrate_gauge":
+            network_hashrate = value
+
+        elif labels.get("worker") == worker_name:
+
+            if name == "ks_valid_share_diff_counter":
+                raw_diffsum = value
+                worker_found = True
+
+            elif name == "ks_valid_share_counter":
+                raw_valid = int(value)
+                worker_found = True
+
+            elif name == "ks_blocks_mined":
+                raw_blocks = int(value)
+                worker_found = True
+
+            elif name == "ks_invalid_share_counter":
+                share_type = labels.get("type")
+                if share_type in raw_rejected:
+                    raw_rejected[share_type] = int(value)
+
+    if not worker_found:
+        return {
+            "pool": "Kaspa Solo Bridge",
+            "coin": "KAS",
+            "status": "offline",
+            "error": "Worker nicht in Bridge-Metrics gefunden"
+        }
+
+    workers_state = BRIDGE_STATE.setdefault("workers", {})
+    worker_state = workers_state.get(worker_name)
+
+    if not isinstance(worker_state, dict):
+        worker_state = {
+            "process_start_time": process_start_time,
+            "last_raw_diffsum": raw_diffsum,
+            "last_raw_blocks": raw_blocks,
+            "accumulated_diffsum": raw_diffsum,
+            "diffsum_at_last_block": raw_diffsum,
+            "cumulative_blocks": raw_blocks,
+            "updated": int(time.time())
+        }
+        workers_state[worker_name] = worker_state
+        save_bridge_state(BRIDGE_STATE)
+
+    bridge_restarted = (
+        process_start_time is not None
+        and worker_state.get("process_start_time") is not None
+        and process_start_time != worker_state.get("process_start_time")
+    )
+
+    last_raw_diffsum = worker_state.get("last_raw_diffsum", raw_diffsum)
+    last_raw_blocks = worker_state.get("last_raw_blocks", raw_blocks)
+
+    if bridge_restarted or raw_diffsum < last_raw_diffsum:
+        diffsum_delta = 0.0
+    else:
+        diffsum_delta = raw_diffsum - last_raw_diffsum
+
+    if bridge_restarted or raw_blocks < last_raw_blocks:
+        blocks_delta = 0
+    else:
+        blocks_delta = raw_blocks - last_raw_blocks
+
+    accumulated_diffsum = worker_state.get(
+        "accumulated_diffsum",
+        worker_state.get("diffsum_at_last_block", raw_diffsum)
+    ) + diffsum_delta
+    cumulative_blocks = worker_state.get("cumulative_blocks", 0) + blocks_delta
+
+    if blocks_delta > 0:
+        worker_state["diffsum_at_last_block"] = accumulated_diffsum
+
+    worker_state["process_start_time"] = process_start_time
+    worker_state["last_raw_diffsum"] = raw_diffsum
+    worker_state["last_raw_blocks"] = raw_blocks
+    worker_state["accumulated_diffsum"] = accumulated_diffsum
+    worker_state["cumulative_blocks"] = cumulative_blocks
+    worker_state["updated"] = int(time.time())
+
+    save_bridge_state(BRIDGE_STATE)
+
+    diffsum_since_block = max(
+        0.0,
+        accumulated_diffsum - worker_state.get("diffsum_at_last_block", 0.0)
+    )
+
+    effort = None
+    if network_difficulty and network_difficulty > 0:
+        effort = diffsum_since_block * 4294967296 / network_difficulty * 100
+
+    total_rejected = sum(raw_rejected.values())
+
+    return {
+        "status": "online",
+        "scheme": "solo",
+        "accepted": raw_valid,
+        "rejected": total_rejected,
+        "invalid": raw_rejected["invalid"],
+        "stale": raw_rejected["stale"],
+        "duplicate": raw_rejected["duplicate"],
+        "weak": raw_rejected["weak"],
+        "shares": raw_valid,
+        "blocks": cumulative_blocks,
+        "effort": effort,
+        "network_difficulty": network_difficulty,
+        "network_hashrate": network_hashrate,
+        "pool": "Kaspa Solo Bridge",
+        "coin": "KAS"
     }

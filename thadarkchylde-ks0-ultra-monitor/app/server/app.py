@@ -58,7 +58,7 @@ def _build_iceriver_result(miner):
         "model": overview_data.get("model"),
 
         "pool": data.get("pool", {}),
-        "shares": data.get("kryptex", {})
+        "shares": data.get("bridge", {})
     }
 
 
