@@ -560,6 +560,66 @@ header{
     font-size:29px!important;
   }
 }
+
+.scan-panel {
+    max-width: 900px;
+    margin: 0 auto 20px;
+    padding: 15px;
+    border: 1px solid #00ff66;
+    border-radius: 4px;
+}
+#scanButton {
+    background: transparent;
+    border: 1px solid #00ff66;
+    color: #00ff66;
+    font-family: "Courier New", monospace;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-shadow: 0 0 6px #00ff66;
+    font-size: 13px;
+}
+#scanButton:hover {
+    background: rgba(0,255,102,0.1);
+}
+#scanButton:disabled {
+    opacity: .5;
+    cursor: default;
+}
+.scan-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(0,255,102,0.2);
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+.scan-ip {
+    font-weight: bold;
+}
+.scan-type {
+    opacity: .7;
+}
+.scan-item input {
+    background: #001a0d;
+    border: 1px solid #00ff66;
+    color: #00ff66;
+    font-family: "Courier New", monospace;
+    padding: 4px 6px;
+}
+.scan-item button {
+    background: transparent;
+    border: 1px solid #00ff66;
+    color: #00ff66;
+    cursor: pointer;
+    font-family: "Courier New", monospace;
+    padding: 4px 10px;
+}
+.scan-empty {
+    opacity: .6;
+    padding: 6px 0;
+    margin-top: 10px;
+}
 </style>
 </head>
 
@@ -574,7 +634,13 @@ header{
 
     <div class="miners" id="miners"></div>
 
-    <div class="total">
+    
+<div class="scan-panel">
+    <button id="scanButton" onclick="scanNetwork()">SCAN NETWORK // NEUE MINER SUCHEN</button>
+    <div id="scanResults"></div>
+</div>
+
+<div class="total">
         <div class="total-title">TOTAL POWER CONSUMPTION</div>
         <div class="total-power" id="totalPower">-- W</div>
     </div>
@@ -900,10 +966,118 @@ function renderKs0(miner) {
     </div>`;
 }
 
+function renderBitmain(miner) {
+
+    const online = !!miner.online;
+
+    return `
+    <div class="miner-card ${online ? "" : "offline-card"}">
+
+        <div class="miner-header">
+            <div>
+                <div class="miner-name">${text(miner.name)}</div>
+                <div class="miner-model">${text(miner.model, "BITMAIN / CGMINER")}</div>
+            </div>
+
+            <div class="miner-status ${online ? "online" : "offline"}">
+                ${online ? "\u25cf ONLINE" : "\u25cf OFFLINE"}
+            </div>
+        </div>
+
+        <div class="hero">
+            <div class="hero-label">HASHRATE</div>
+            <div class="hero-value">${number(miner.hashrate, 1)} GH/s</div>
+        </div>
+
+        <div class="stats">
+
+            <div class="stat important">
+                <div class="stat-label">AVERAGE</div>
+                <div class="stat-value">${number(miner.average_hashrate, 1)} GH/s</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">TEMPERATURE</div>
+                <div class="stat-value">${formatTemp(miner.temperature)}</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">FAN</div>
+                <div class="stat-value">${number(miner.fan)} RPM</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">FREQUENCY</div>
+                <div class="stat-value">${number(miner.frequency)} MHz</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">UPTIME</div>
+                <div class="stat-value">${text(miner.uptime)} s</div>
+            </div>
+
+        </div>
+
+        <div class="share-section">
+
+            <div class="section-title">SHARES</div>
+
+            <div class="share-grid">
+
+                <div class="share">
+                    <div class="share-label">ACCEPTED</div>
+                    <div class="share-value">${formatDiff(miner.accepted)}</div>
+                </div>
+
+                <div class="share">
+                    <div class="share-label">REJECTED</div>
+                    <div class="share-value">${formatDiff(miner.rejected)}</div>
+                </div>
+
+                <div class="share">
+                    <div class="share-label">HW ERRORS</div>
+                    <div class="share-value">${formatDiff(miner.hardware_errors)}</div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="footer-info">
+
+            <div class="info">
+                <span>POOL</span>
+                <strong>${text(miner.pool)}</strong>
+            </div>
+
+            <div class="info">
+                <span>STATUS</span>
+                <strong>${text(miner.pool_status)}</strong>
+            </div>
+
+            <div class="info">
+                <span>FIRMWARE</span>
+                <strong>${text(miner.firmware)}</strong>
+            </div>
+
+            <div class="info">
+                <span>IP</span>
+                <strong>${text(miner.ip)}</strong>
+            </div>
+
+        </div>
+
+    </div>`;
+}
+
 function renderMiner(miner) {
 
     if (miner.type === "nerdqaxe") {
         return renderNerdQaxe(miner);
+    }
+
+    if (miner.type === "bitmain") {
+        return renderBitmain(miner);
     }
 
     return renderKs0(miner);
@@ -926,7 +1100,7 @@ async function update() {
 
         miners = miners.map(miner => {
 
-            if (miner.type === "nerdqaxe") {
+            if (miner.type === "nerdqaxe" || miner.type === "bitmain") {
 
                 const key = miner.ip || miner.name;
 
@@ -976,6 +1150,60 @@ async function update() {
 
         document.getElementById("systemStatus").innerHTML =
             '<span class="error">CONNECTION ERROR</span>';
+    }
+}
+
+
+async function scanNetwork() {
+    const btn = document.getElementById("scanButton");
+    const resultsEl = document.getElementById("scanResults");
+    btn.disabled = true;
+    btn.textContent = "SCANNE...";
+    resultsEl.innerHTML = "";
+
+    try {
+        const response = await fetch("/api/scan");
+        const found = await response.json();
+
+        if (found.length === 0) {
+            resultsEl.innerHTML = '<div class="scan-empty">Keine neuen Geraete gefunden.</div>';
+        } else {
+            resultsEl.innerHTML = found.map((device, i) => `
+                <div class="scan-item">
+                    <span class="scan-ip">${device.ip}</span>
+                    <span class="scan-type">${device.label}</span>
+                    <input type="text" id="scan-name-${i}" placeholder="Name" value="Miner-${device.ip.split('.').pop()}">
+                    <button onclick='addMiner("${device.ip}", "${device.type}", ${i})'>+ HINZUFUEGEN</button>
+                </div>
+            `).join("");
+        }
+    } catch (error) {
+        resultsEl.innerHTML = '<div class="scan-empty error">Scan fehlgeschlagen.</div>';
+    }
+
+    btn.disabled = false;
+    btn.textContent = "SCAN NETWORK // NEUE MINER SUCHEN";
+}
+
+async function addMiner(ip, type, index) {
+    const nameInput = document.getElementById(`scan-name-${index}`);
+    const name = nameInput.value.trim() || `Miner-${ip.split('.').pop()}`;
+
+    try {
+        const response = await fetch("/api/miners", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: name, ip: ip, type: type })
+        });
+
+        if (response.ok) {
+            nameInput.closest(".scan-item").remove();
+            update();
+        } else {
+            alert("Konnte Miner nicht hinzufuegen.");
+        }
+    } catch (error) {
+        alert("Fehler beim Hinzufuegen.");
     }
 }
 

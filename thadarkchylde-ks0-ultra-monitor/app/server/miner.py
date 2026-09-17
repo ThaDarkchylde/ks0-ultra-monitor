@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import socket
 from pathlib import Path
 import requests
 import urllib3
@@ -877,3 +878,77 @@ def get_miner_data(ip):
         "kryptex": kryptex
     }
 
+
+# ============================================================
+# BITMAIN / CGMINER-COMPATIBLE ASICS
+# ============================================================
+
+def _cgminer_command(ip, command, port=4028, timeout=3):
+    try:
+        with socket.create_connection((ip, port), timeout=timeout) as sock:
+            sock.sendall(json.dumps({"command": command}).encode())
+            data = b""
+            while True:
+                chunk = sock.recv(4096)
+                if not chunk:
+                    break
+                data += chunk
+        text = data.decode(errors="ignore").strip("\x00").strip()
+        return json.loads(text)
+    except Exception:
+        return None
+
+
+def get_bitmain_data(ip):
+    summary = _cgminer_command(ip, "summary")
+
+    if not summary:
+        return {
+            "online": False,
+            "error": "cgminer API nicht erreichbar"
+        }
+
+    stats = _cgminer_command(ip, "stats")
+    pools = _cgminer_command(ip, "pools")
+    version = _cgminer_command(ip, "version")
+
+    summary_data = (summary.get("SUMMARY") or [{}])[0]
+    stats_data = (stats.get("STATS") or [{}])[-1] if stats else {}
+    pools_data = (pools.get("POOLS") or [{}])[0] if pools else {}
+    version_data = (version.get("VERSION") or [{}])[0] if version else {}
+
+    temp = None
+    for key in ("temp1", "temp2", "temp2_1", "temp6", "temp"):
+        if stats_data.get(key):
+            temp = stats_data.get(key)
+            break
+
+    fan = None
+    for key in ("fan1", "fan2", "fan3"):
+        if stats_data.get(key):
+            fan = stats_data.get(key)
+            break
+
+    hashrate = summary_data.get("GHS 5s")
+    avg_hashrate = summary_data.get("GHS av")
+    frequency = stats_data.get("frequency") or stats_data.get("Frequency")
+
+    return {
+        "online": True,
+        "model": stats_data.get("Type") or summary_data.get("Type") or "Bitmain/CGMiner-kompatibel",
+        "hashrate": float(hashrate) if hashrate is not None else None,
+        "average_hashrate": float(avg_hashrate) if avg_hashrate is not None else None,
+        "temperature": temp,
+        "fan": fan,
+        "frequency": frequency,
+        "accepted": summary_data.get("Accepted", 0),
+        "rejected": summary_data.get("Rejected", 0),
+        "hardware_errors": summary_data.get("Hardware Errors", 0),
+        "pool": pools_data.get("URL"),
+        "pool_status": pools_data.get("Status"),
+        "firmware": version_data.get("CGMiner") or version_data.get("Miner"),
+        "uptime": summary_data.get("Elapsed"),
+        "power": None,
+        "power_source": "n/a",
+        "error": None
+    }
