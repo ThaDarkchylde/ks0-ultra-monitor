@@ -561,64 +561,116 @@ header{
   }
 }
 
-.scan-panel {
-    max-width: 900px;
-    margin: 0 auto 20px;
-    padding: 15px;
-    border: 1px solid #00ff66;
-    border-radius: 4px;
+.scan-panel{
+  position:relative;
+  background:linear-gradient(145deg,var(--panel2),var(--panel))!important;
+  border:1px solid var(--border)!important;
+  border-radius:20px!important;
+  box-shadow:var(--shadow)!important;
+  backdrop-filter:blur(16px);
+  overflow:hidden;
+  max-width:900px;
+  margin:0 auto 20px;
+  padding:18px 20px;
 }
-#scanButton {
-    background: transparent;
-    border: 1px solid #00ff66;
-    color: #00ff66;
-    font-family: "Courier New", monospace;
-    padding: 8px 16px;
-    cursor: pointer;
-    text-shadow: 0 0 6px #00ff66;
-    font-size: 13px;
+
+.scan-panel:before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:.8;
 }
-#scanButton:hover {
-    background: rgba(0,255,102,0.1);
+
+#scanButton{
+  background:rgba(53,217,255,.09);
+  border:1px solid rgba(53,217,255,.35);
+  color:var(--cyan);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  border-radius:999px;
+  padding:10px 22px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.2s ease;
 }
-#scanButton:disabled {
-    opacity: .5;
-    cursor: default;
+
+#scanButton:hover{
+  background:rgba(53,217,255,.18);
+  border-color:rgba(53,217,255,.55);
 }
-.scan-item {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px dashed rgba(0,255,102,0.2);
-    flex-wrap: wrap;
-    margin-top: 10px;
+
+#scanButton:disabled{
+  opacity:.5;
+  cursor:default;
 }
-.scan-ip {
-    font-weight: bold;
+
+.scan-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.055);
+  border-radius:12px;
+  padding:11px 14px;
+  margin-top:12px;
 }
-.scan-type {
-    opacity: .7;
+
+.scan-ip{
+  color:var(--text);
+  font-weight:700;
+  font-size:14px;
 }
-.scan-item input {
-    background: #001a0d;
-    border: 1px solid #00ff66;
-    color: #00ff66;
-    font-family: "Courier New", monospace;
-    padding: 4px 6px;
+
+.scan-type{
+  color:var(--muted);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
 }
-.scan-item button {
-    background: transparent;
-    border: 1px solid #00ff66;
-    color: #00ff66;
-    cursor: pointer;
-    font-family: "Courier New", monospace;
-    padding: 4px 10px;
+
+.scan-item input{
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  color:var(--text);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  border-radius:10px;
+  padding:6px 10px;
+  font-size:13px;
+  flex:1;
+  min-width:120px;
 }
-.scan-empty {
-    opacity: .6;
-    padding: 6px 0;
-    margin-top: 10px;
+
+.scan-item button{
+  background:rgba(53,255,154,.09);
+  border:1px solid rgba(53,255,154,.35);
+  color:var(--green);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  border-radius:999px;
+  padding:7px 16px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.scan-item button:hover{
+  background:rgba(53,255,154,.18);
+  border-color:rgba(53,255,154,.55);
+}
+
+.scan-empty{
+  color:var(--muted);
+  font-size:12px;
+  padding:10px 2px 2px;
 }
 </style>
 </head>
@@ -636,7 +688,7 @@ header{
 
     
 <div class="scan-panel">
-    <button id="scanButton" onclick="scanNetwork()">SCAN NETWORK // NEUE MINER SUCHEN</button>
+    <button id="scanButton" onclick="scanNetwork()">Netzwerk scannen</button>
     <div id="scanResults"></div>
 </div>
 
@@ -1182,7 +1234,7 @@ async function scanNetwork() {
     }
 
     btn.disabled = false;
-    btn.textContent = "SCAN NETWORK // NEUE MINER SUCHEN";
+    btn.textContent = "Netzwerk scannen";
 }
 
 async function addMiner(ip, type, index) {
